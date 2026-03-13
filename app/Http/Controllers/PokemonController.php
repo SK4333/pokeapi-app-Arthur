@@ -4,37 +4,37 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
+use App\Models\Pokemon;
 
 class PokemonController extends Controller
 {
     public function search(Request $request)
     {
-        $name = strtolower($request->name);
+        $name = $request->name;
 
-        try {
+        $response = Http::get("https://pokeapi.co/api/v2/pokemon/".$name);
 
-            $pokemon = Cache::remember("pokemon_".$name, 300, function () use ($name) {
+        $pokemon = $response->json();
 
-                $response = Http::get("https://pokeapi.co/api/v2/pokemon/".$name);
+        return view('pokemon', compact('pokemon'));
+    }
 
-                if (!$response->successful()) {
-                    return null;
-                }
+    public function index()
+    {
+        $pokemons = Pokemon::all();
+        return view('pokemons', compact('pokemons'));
+    }
 
-                return $response->json();
-            });
+    public function import(Request $request)
+    {
+        Pokemon::create([
+            'api_id' => $request->api_id,
+            'name' => $request->name,
+            'height' => $request->height,
+            'weight' => $request->weight,
+            'sprite' => $request->sprite
+        ]);
 
-            if (!$pokemon) {
-                return back()->with('error','Pokemon não encontrado');
-            }
-
-            return view('pokemon', compact('pokemon'));
-
-        } catch (\Exception $e) {
-
-            return back()->with('error','Erro ao conectar com a API');
-
-        }
+        return redirect('/pokemons');
     }
 }
