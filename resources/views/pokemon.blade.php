@@ -5,10 +5,8 @@
 <p>Altura: {{ $pokemon['height'] }}</p>
 <p>Peso: {{ $pokemon['weight'] }}</p>
 
-
-
-
 <form action="/importar" method="POST">
+
 @csrf
 
 <input type="hidden" name="api_id" value="{{ $pokemon['id'] }}">
